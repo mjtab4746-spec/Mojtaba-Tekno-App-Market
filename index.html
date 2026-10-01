@@ -1,0 +1,143 @@
+from pathlib import Path
+import zipfile, shutil
+
+out = Path("/mnt/data/Mojtaba-Tekno-Toolbox")
+if out.exists():
+    shutil.rmtree(out)
+out.mkdir(parents=True)
+
+html = r'''<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mojtaba Tekno | مارکت + جعبه ابزار</title>
+<style>
+:root{--bg:#050b14;--panel:#0b1726;--panel2:#101f31;--line:#1d344c;--blue:#1687e8;--cyan:#54b7ff;--text:#f4f8ff;--muted:#9dafc2;--danger:#e04f62}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 50% -10%,#12304c 0,#050b14 42%);color:var(--text);font-family:Tahoma,Arial,sans-serif}
+button,input,select,textarea{font:inherit}.wrap{max-width:1150px;margin:auto;padding:14px}
+header{position:sticky;top:0;z-index:20;background:#050b14eF;backdrop-filter:blur(15px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.logo{font-weight:900;font-size:24px;color:var(--cyan)}
+.navlinks{display:flex;gap:7px;flex-wrap:wrap}.btn{border:0;border-radius:13px;padding:10px 14px;background:#14283e;color:#fff;font-weight:800;cursor:pointer}.primary{background:var(--blue)}.danger{background:var(--danger)}
+.hero{display:grid;grid-template-columns:1.35fr .85fr;gap:14px;margin:22px 0}.panel,.card,.tool{background:linear-gradient(145deg,#0d1c2d,#091422);border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 35px #0004}.panel{padding:22px}
+h1{font-size:clamp(28px,6vw,45px);margin:0 0 12px}.muted{color:var(--muted);line-height:1.9}.search{width:100%;padding:15px;border-radius:14px;border:1px solid #2a4058;background:#050c16;color:#fff;outline:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:var(--panel2);border-radius:15px;padding:13px;text-align:center}.stat b{display:block;font-size:22px;margin-bottom:5px}
+.section{margin:28px 0}.sectionhead{display:flex;align-items:center;justify-content:space-between;gap:10px}.toolbar{display:flex;gap:7px;overflow:auto;padding:10px 0}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{padding:15px}.icon{width:64px;height:64px;border-radius:17px;display:grid;place-items:center;background:#142d47;font-size:31px}.card h3{margin:10px 0 4px}.meta{font-size:12px;color:#8ea6bd}.actions{display:flex;gap:7px;margin-top:12px}.actions>*{flex:1;text-align:center}
+.download.disabled{opacity:.55;cursor:not-allowed}.shorts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.short{height:150px;border-radius:20px;padding:16px;display:flex;align-items:end;background:linear-gradient(145deg,#244e76,#111c2c);border:1px solid #2a4b68}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tool{padding:17px;cursor:pointer;transition:.18s}.tool:hover{transform:translateY(-3px);border-color:#3d80ad}.tool .big{font-size:35px}.tool h3{margin:9px 0 5px}
+#admin{display:none}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field{width:100%;padding:12px;border-radius:12px;border:1px solid #2a4058;background:#050c16;color:#fff}.wide{grid-column:1/-1}
+.modal{position:fixed;inset:0;background:#0009;z-index:50;display:none;align-items:center;justify-content:center;padding:15px}.modalbox{width:min(560px,100%);max-height:90vh;overflow:auto;background:#0b1726;border:1px solid #2a4660;border-radius:22px;padding:20px}.modalhead{display:flex;justify-content:space-between;align-items:center}.result{margin-top:10px;background:#07111d;border-radius:14px;padding:14px;min-height:45px}
+textarea{min-height:180px;resize:vertical}
+footer{margin-top:40px;border-top:1px solid var(--line);padding:25px;text-align:center;color:#8297ad}
+@media(max-width:850px){.hero{grid-template-columns:1fr}.grid,.tools{grid-template-columns:repeat(2,1fr)}.shorts{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.wrap{padding:11px}.grid,.tools{grid-template-columns:1fr 1fr;gap:8px}.card,.tool{padding:12px}.formgrid{grid-template-columns:1fr}.wide{grid-column:auto}.navlinks .btn{padding:9px 10px;font-size:12px}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav">
+<div class="logo">🚀 Mojtaba Tekno</div>
+<div class="navlinks">
+<button class="btn" onclick="go('market')">🏪 مارکت</button>
+<button class="btn" onclick="go('toolbox')">🧰 جعبه ابزار</button>
+<button class="btn" onclick="toggleAdmin()">🛠 مدیریت</button>
+</div></div></header>
+
+<main class="wrap">
+<section class="hero">
+<div class="panel"><h1>مارکت + جعبه ابزار</h1><p class="muted">برنامه، بازی و ابزارهای کاربردی؛ همه در یک سایت. این نسخه برای تست در Acode کاملاً مستقل است.</p>
+<input id="search" class="search" placeholder="🔎 جستجوی برنامه، بازی یا ابزار..." oninput="render()"></div>
+<div class="panel"><h2>📊 آمار</h2><div class="stats"><div class="stat"><b id="appN">0</b>برنامه</div><div class="stat"><b id="gameN">0</b>بازی</div><div class="stat"><b id="toolN">8</b>ابزار</div></div><p class="muted">دانلود فقط وقتی فعال می‌شود که لینک APK واقعی برای برنامه ثبت شده باشد.</p></div>
+</section>
+
+<section id="market" class="section">
+<div class="sectionhead"><h2>📱 برنامه‌ها و بازی‌ها</h2><span id="itemCount" class="muted"></span></div>
+<div class="toolbar" id="cats"></div><div class="grid" id="grid"></div>
+</section>
+
+<section id="toolbox" class="section">
+<div class="sectionhead"><h2>🧰 جعبه ابزار Mojtaba Tekno</h2><span class="muted">ابزارهای کاربردی</span></div>
+<div class="tools">
+<div class="tool" onclick="openTool('calc')"><div class="big">🧮</div><h3>ماشین حساب</h3><div class="muted">محاسبات سریع</div></div>
+<div class="tool" onclick="openTool('convert')"><div class="big">📏</div><h3>تبدیل واحد</h3><div class="muted">طول، وزن، حجم</div></div>
+<div class="tool" onclick="openTool('password')"><div class="big">🔐</div><h3>رمزساز</h3><div class="muted">ساخت رمز تصادفی</div></div>
+<div class="tool" onclick="openTool('notes')"><div class="big">📝</div><h3>یادداشت</h3><div class="muted">ذخیره روی دستگاه</div></div>
+<div class="tool" onclick="openTool('stopwatch')"><div class="big">⏱️</div><h3>کرنومتر</h3><div class="muted">اندازه‌گیری زمان</div></div>
+<div class="tool" onclick="openTool('counter')"><div class="big">🔢</div><h3>شمارنده</h3><div class="muted">شمارش با یک لمس</div></div>
+<div class="tool" onclick="openTool('text')"><div class="big">🔤</div><h3>ابزار متن</h3><div class="muted">حروف و تعداد کلمات</div></div>
+<div class="tool" onclick="openTool('color')"><div class="big">🎨</div><h3>انتخاب رنگ</h3><div class="muted">ساخت کد HEX</div></div>
+</div></section>
+
+<section class="section"><div class="sectionhead"><h2>🎬 Shorts</h2></div><div class="shorts"><div class="short">معرفی برنامه‌های جدید ▶</div><div class="short">ترفندهای اندروید ▶</div><div class="short">بازی‌های جدید ▶</div><div class="short">اخبار تکنولوژی ▶</div></div></section>
+
+<section id="admin" class="panel section">
+<div class="sectionhead"><h2>🛠 پنل مدیریت</h2><button class="btn" onclick="toggleAdmin()">بستن</button></div>
+<p class="muted">برنامه را به مارکت اضافه کن. برای دانلود واقعی، لینک مستقیم APK را وارد کن.</p>
+<div class="formgrid"><input id="nName" class="field" placeholder="نام برنامه/بازی"><input id="nCat" class="field" placeholder="دسته‌بندی"><input id="nVersion" class="field" placeholder="نسخه"><select id="nType" class="field"><option value="app">برنامه</option><option value="game">بازی</option></select><input id="nUrl" class="field wide" placeholder="لینک مستقیم APK (اختیاری)"><input id="nDesc" class="field wide" placeholder="توضیحات"></div>
+<button class="btn primary" onclick="addItem()">➕ افزودن</button><p id="adminMsg" class="muted"></p>
+</section>
+</main><footer>Mojtaba Tekno © 2026</footer>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeTool()"><div class="modalbox"><div class="modalhead"><h2 id="modalTitle"></h2><button class="btn" onclick="closeTool()">✕</button></div><div id="modalBody"></div></div></div>
+
+<script>
+const seed=[
+{name:"Nova Browser",description:"مرورگر سریع و سبک",category:"ابزار",type:"app",version:"1.0.0",downloads:1200,emoji:"🌐"},
+{name:"AI Mate",description:"دستیار هوش مصنوعی",category:"هوش مصنوعی",type:"app",version:"2.1.0",downloads:3400,emoji:"🤖"},
+{name:"Cyber Drift",description:"مسابقه‌ای هیجان‌انگیز",category:"بازی",type:"game",version:"1.4.2",downloads:5200,emoji:"🏎️"},
+{name:"Block Quest",description:"ماجراجویی پیکسلی",category:"بازی",type:"game",version:"3.0.1",downloads:2800,emoji:"🧱"}
+];
+let items=JSON.parse(localStorage.getItem("mt_items")||"null")||seed.slice(),cat="همه",timer=null,seconds=0,counter=0;
+function save(){localStorage.setItem("mt_items",JSON.stringify(items))}
+function go(id){document.getElementById(id).scrollIntoView({behavior:"smooth"})}
+function toggleAdmin(){const e=document.getElementById("admin");e.style.display=e.style.display==="block"?"none":"block";if(e.style.display==="block")e.scrollIntoView({behavior:"smooth"})}
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function render(){
+let q=document.getElementById("search").value.toLowerCase().trim();
+let f=items.filter(x=>(cat==="همه"||x.category===cat)&&(`${x.name} ${x.description} ${x.category}`).toLowerCase().includes(q));
+document.getElementById("grid").innerHTML=f.map((x,i)=>`<article class="card"><div class="icon">${x.emoji||(x.type==="game"?"🎮":"📱")}</div><div class="meta">${x.type==="game"?"بازی":"برنامه"} · ${esc(x.category||"عمومی")}</div><h3>${esc(x.name)}</h3><p class="muted">${esc(x.description||"")}</p><div class="meta">نسخه ${esc(x.version||"—")} · ${Number(x.downloads||0).toLocaleString("fa-IR")} دانلود</div><div class="actions"><button class="btn" onclick="details(${items.indexOf(x)})">جزئیات</button>${x.url?`<a class="btn primary download" href="${esc(x.url)}" target="_blank" rel="noopener">⬇️ دانلود APK</a>`:`<button class="btn download disabled" onclick="noApk()">⬇️ بدون APK</button>`}</div></article>`).join("")||'<p class="muted">چیزی پیدا نشد.</p>';
+document.getElementById("appN").textContent=items.filter(x=>x.type==="app").length.toLocaleString("fa-IR");
+document.getElementById("gameN").textContent=items.filter(x=>x.type==="game").length.toLocaleString("fa-IR");
+document.getElementById("itemCount").textContent=items.length.toLocaleString("fa-IR")+" مورد";
+let cs=["همه",...new Set(items.map(x=>x.category||"عمومی"))];
+document.getElementById("cats").innerHTML=cs.map(c=>`<button class="btn ${c===cat?"primary":""}" onclick='cat=${JSON.stringify(c)};render()'>${esc(c)}</button>`).join("");
+}
+function noApk(){alert("برای این برنامه هنوز فایل APK ثبت نشده است. از پنل مدیریت یک لینک APK واقعی وارد کن.")}
+function details(i){let x=items[i];alert(`${x.name}\n\n${x.description||"بدون توضیحات"}\nنسخه: ${x.version||"—"}\nدسته: ${x.category||"عمومی"}`)}
+function addItem(){
+let n=document.getElementById("nName").value.trim(),d=document.getElementById("nDesc").value.trim(),c=document.getElementById("nCat").value.trim()||"عمومی",v=document.getElementById("nVersion").value.trim()||"1.0.0",t=document.getElementById("nType").value,u=document.getElementById("nUrl").value.trim();
+if(!n){document.getElementById("adminMsg").textContent="نام را وارد کن.";return}
+if(u&&!/^https?:\/\//i.test(u)){document.getElementById("adminMsg").textContent="لینک APK باید با http:// یا https:// شروع شود.";return}
+items.unshift({name:n,description:d,category:c,type:t,version:v,url:u,downloads:0,emoji:t==="game"?"🎮":"📱"});save();render();document.getElementById("adminMsg").textContent="با موفقیت اضافه شد ✅";["nName","nDesc","nCat","nVersion","nUrl"].forEach(id=>document.getElementById(id).value="");
+}
+function openTool(t){
+const b=document.getElementById("modalBody"),title=document.getElementById("modalTitle"),m=document.getElementById("modal");m.style.display="flex";
+if(t==="calc"){title.textContent="🧮 ماشین حساب";b.innerHTML='<input id="calcIn" class="field" placeholder="مثلاً 25*4+10"><button class="btn primary" onclick="calc()">محاسبه</button><div id="calcOut" class="result"></div>'}
+if(t==="convert"){title.textContent="📏 تبدیل واحد";b.innerHTML='<input id="cv" class="field" type="number" placeholder="مقدار"><select id="from" class="field"><option value="m">متر</option><option value="km">کیلومتر</option><option value="cm">سانتی‌متر</option><option value="kg">کیلوگرم</option><option value="g">گرم</option></select><select id="to" class="field"><option value="m">متر</option><option value="km">کیلومتر</option><option value="cm">سانتی‌متر</option><option value="kg">کیلوگرم</option><option value="g">گرم</option></select><button class="btn primary" onclick="convert()">تبدیل</button><div id="cvout" class="result"></div>'}
+if(t==="password"){title.textContent="🔐 رمزساز";b.innerHTML='<input id="plen" class="field" type="number" value="16" min="4" max="64"><button class="btn primary" onclick="genPass()">ساخت رمز</button><div id="pout" class="result"></div>'}
+if(t==="notes"){title.textContent="📝 یادداشت";b.innerHTML='<textarea id="notes" placeholder="یادداشت خودت را بنویس..."></textarea><button class="btn primary" onclick="saveNotes()">ذخیره</button><button class="btn" onclick="loadNotes()">بازیابی</button><div id="nout" class="result"></div>'}
+if(t==="stopwatch"){title.textContent="⏱️ کرنومتر";b.innerHTML='<div id="sw" class="result" style="font-size:35px;text-align:center">00:00</div><button class="btn primary" onclick="startSW()">شروع</button><button class="btn" onclick="stopSW()">توقف</button><button class="btn" onclick="resetSW()">صفر</button>'}
+if(t==="counter"){title.textContent="🔢 شمارنده";counter=0;b.innerHTML='<div id="co" class="result" style="font-size:50px;text-align:center">0</div><button class="btn primary" onclick="counter++;document.getElementById(\'co\').textContent=counter">+1</button><button class="btn" onclick="counter--;document.getElementById(\'co\').textContent=counter">-1</button><button class="btn" onclick="counter=0;document.getElementById(\'co\').textContent=0">صفر</button>'}
+if(t==="text"){title.textContent="🔤 ابزار متن";b.innerHTML='<textarea id="txt" oninput="textStats()"></textarea><div id="ts" class="result">حروف: 0 · کلمات: 0</div>'}
+if(t==="color"){title.textContent="🎨 انتخاب رنگ";b.innerHTML='<input id="color" type="color" value="#1687e8" style="height:80px"><div id="hex" class="result">#1687E8</div>';document.getElementById("color").oninput=e=>document.getElementById("hex").textContent=e.target.value.toUpperCase()}
+}
+function closeTool(){document.getElementById("modal").style.display="none";if(timer){clearInterval(timer);timer=null}}
+function calc(){try{let x=document.getElementById("calcIn").value.replace(/[^0-9+\-*/().% ]/g,"");document.getElementById("calcOut").textContent=Function("return "+x)()}catch(e){document.getElementById("calcOut").textContent="عبارت نامعتبر است"}}
+function convert(){let n=Number(document.getElementById("cv").value),a=document.getElementById("from").value,b=document.getElementById("to").value;const base={m:n,km:n*1000,cm:n/100,kg:n,g:n/1000};let r=base[a];const out={m:r,km:r/1000,cm:r*100,kg:r,g:r*1000};document.getElementById("cvout").textContent=out[b]===undefined?"برای طول و وزن جداگانه تبدیل کن":out[b]}
+function genPass(){let chars="ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*";let n=+document.getElementById("plen").value||16,s="";crypto.getRandomValues(new Uint32Array(n)).forEach(v=>s+=chars[v%chars.length]);document.getElementById("pout").textContent=s}
+function saveNotes(){localStorage.setItem("mt_notes",document.getElementById("notes").value);document.getElementById("nout").textContent="ذخیره شد ✅"}
+function loadNotes(){document.getElementById("notes").value=localStorage.getItem("mt_notes")||""}
+function startSW(){if(timer)return;timer=setInterval(()=>{seconds++;document.getElementById("sw").textContent=String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")},1000)}
+function stopSW(){clearInterval(timer);timer=null}
+function resetSW(){stopSW();seconds=0;document.getElementById("sw").textContent="00:00"}
+function textStats(){let s=document.getElementById("txt").value.trim();document.getElementById("ts").textContent="حروف: "+s.length.toLocaleString("fa-IR")+" · کلمات: "+(s?s.split(/\s+/).length:0).toLocaleString("fa-IR")}
+render();
+</script>
+</body></html>'''
+(out/"index.html").write_text(html, encoding="utf-8")
+(out/"راهنما.txt").write_text("این نسخه فقط یک فایل index.html دارد. آن را در Acode باز و Preview کن. پنل مدیریت و جعبه ابزار داخل همان صفحه هستند.\n", encoding="utf-8")
+
+zip_path=Path("/mnt/data/Mojtaba-Tekno-Toolbox.zip")
+if zip_path.exists(): zip_path.unlink()
+with zipfile.ZipFile(zip_path,"w",zipfile.ZIP_DEFLATED) as z:
+    for p in out.iterdir(): z.write(p,arcname=p.name)
+print(zip_path)
